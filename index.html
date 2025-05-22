@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finals Lab Task 6 - MongoDB CRUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --space-dark: #0a0b1a;
+            --space-light: #2d3252;
+            --star-color: #ffffff;
+            --accent-purple: #9d4edd;
+            --accent-blue: #48bfe3;
+            --text-color: #e2e2e2;
+            --link-color: #a991ff;
+            --code-bg: rgba(45, 50, 82, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--space-dark);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .cosmic-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1a1b4b 0%, #0a0b1a 100%);
+            opacity: 0.8;
+            animation: pulse-bg 15s ease infinite;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            padding: 4rem 0;
+            position: relative;
+        }
+
+        .title {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .content-section {
+            background: rgba(45, 50, 82, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            transform: translateY(50px);
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .project-description {
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            padding: 1.5rem;
+            background: rgba(45, 50, 82, 0.3);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-purple);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-description:hover {
+            transform: translateY(-5px) scale(1.01);
+            background: rgba(45, 50, 82, 0.5);
+            box-shadow: 0 10px 30px rgba(157, 78, 221, 0.3);
+            border-left-color: var(--accent-blue);
+        }
+
+        .project-description::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(157, 78, 221, 0.1),
+                rgba(72, 191, 227, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: descriptionShine 3s linear infinite;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .project-description:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes descriptionShine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        .step-section {
+            margin: 2rem 0;
+            background: rgba(45, 50, 82, 0.3);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-purple);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+            border-left-color: var(--accent-blue);
+        }
+
+        .step-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(157, 78, 221, 0.1),
+                rgba(72, 191, 227, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: sectionShine 3s linear infinite;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .step-section:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes sectionShine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        .step-title {
+            color: var(--accent-purple);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .step-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: var(--accent-purple);
+            margin-right: 1rem;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .step-title:hover::before {
+            height: 32px;
+            background: var(--accent-blue);
+        }
+
+        .step-title:hover {
+            transform: translateX(10px);
+            color: var(--accent-blue);
+            text-shadow: 0 0 8px rgba(72, 191, 227, 0.5);
+        }
+
+        .table-info {
+            background: rgba(45, 50, 82, 0.4);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--accent-blue);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .table-info:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+            border-left-color: var(--accent-purple);
+        }
+
+        .table-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(157, 78, 221, 0.1),
+                rgba(72, 191, 227, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: tableShine 3s linear infinite;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .table-info:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes tableShine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        .table-info h4 {
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+        }
+
+        .table-info:hover h4 {
+            transform: translateX(10px);
+            color: var(--accent-purple);
+            text-shadow: 0 0 8px rgba(157, 78, 221, 0.5);
+        }
+
+        .product-list {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--accent-purple);
+            transition: all 0.3s ease;
+        }
+
+        .product-list:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(157, 78, 221, 0.3);
+            border-left-color: var(--accent-blue);
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem;
+            border-bottom: 1px solid rgba(157, 78, 221, 0.2);
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .product-item:hover {
+            background: rgba(157, 78, 221, 0.1);
+            transform: translateX(10px);
+            padding-left: 1.5rem;
+        }
+
+        .product-item span {
+            transition: all 0.3s ease;
+        }
+
+        .product-item:hover span {
+            color: var(--accent-blue);
+            text-shadow: 0 0 8px rgba(72, 191, 227, 0.5);
+        }
+
+        .image-container {
+            position: relative;
+            margin: 2rem 0;
+            border-radius: 15px;
+            overflow: hidden;
+            transform: translateY(30px);
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.3s;
+            cursor: pointer;
+            background: rgba(45, 50, 82, 0.3);
+            padding: 1rem;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .image-container:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(157, 78, 221, 0.3);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            transition: transform 0.5s ease;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(157, 78, 221, 0.2), rgba(72, 191, 227, 0.2));
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .star {
+            position: absolute;
+            background: var(--star-color);
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 11, 26, 0.95);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(157, 78, 221, 0.3);
+            transform: scale(0.95);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(45, 50, 82, 0.8);
+            border: 2px solid var(--accent-purple);
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-purple);
+            transform: rotate(90deg);
+        }
+
+        .download-section {
+            text-align: center;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(45, 50, 82, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .download-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(157, 78, 221, 0.3);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 30px;
+            background: rgba(45, 50, 82, 0.8);
+            border: 2px solid var(--accent-purple);
+            color: var(--text-color);
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn:hover {
+            background: var(--accent-purple);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(157, 78, 221, 0.4);
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: btnShine 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes btnShine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.2s ease;
+            mix-blend-mode: difference;
+        }
+
+        .custom-cursor::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 6px;
+            height: 6px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .custom-cursor.hover {
+            transform: scale(1.5);
+            background: rgba(157, 78, 221, 0.2);
+            border-color: var(--accent-blue);
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: linear-gradient(45deg, var(--accent-purple), var(--accent-blue));
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.8;
+            transition: opacity 0.5s ease;
+            animation: trailFade 0.5s ease forwards;
+        }
+
+        @keyframes trailFade {
+            0% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.2);
+            }
+        }
+
+        .content-section h2 {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        .content-section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+            transition: width 0.3s ease;
+        }
+
+        .content-section h2:hover::after {
+            width: 100%;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse-bg {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Enhanced list styles */
+        ul {
+            list-style: none;
+            padding-left: 1.5rem;
+        }
+
+        ul li {
+            position: relative;
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        ul li::before {
+            content: '★';
+            color: var(--accent-blue);
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        ul li:hover {
+            transform: translateX(10px);
+            color: var(--accent-blue);
+            text-shadow: 0 0 8px rgba(72, 191, 227, 0.5);
+        }
+
+        ul li:hover::before {
+            transform: rotate(180deg);
+            color: var(--accent-purple);
+        }
+
+        .table-info ul {
+            list-style: none;
+            padding-left: 1.5rem;
+        }
+
+        .table-info ul li {
+            position: relative;
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .table-info ul li::before {
+            content: '★';
+            color: var(--accent-blue);
+            position: absolute;
+            left: 0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .table-info ul li:hover {
+            transform: translateX(10px);
+            color: var(--accent-blue);
+            text-shadow: 0 0 8px rgba(72, 191, 227, 0.5);
+        }
+
+        .table-info ul li:hover::before {
+            transform: rotate(180deg);
+            color: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+    <div class="cosmic-background"></div>
+    <div class="stars"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">Finals Lab Task 6</h1>
+            <p class="subtitle">MongoDB CRUD Practice</p>
+        </header>
+
+        <section class="content-section">
+            <h2>Project Overview</h2>
+            <p class="project-description">
+                This project demonstrates basic MongoDB CRUD operations using the <code>mongo</code> shell. The goal is to practice creating a database, inserting documents into collections, and executing queries including find, update, search, and delete. Additionally, relationships between collections are explored using embedded and referenced documents.
+            </p>
+        </section>
+
+        <section class="content-section">
+            <h2>Step by Step Process</h2>
+            <div class="step-section">
+                <h3 class="step-title">Step 1: Create a Database</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Use the following command to create or switch to a MongoDB database named <b>mongo_practice</b>:</li>
+                    </ul>
+                    <pre><code>use mongo_practice</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 2: Insert Documents</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Create a <b>movies</b> collection and insert multiple documents with fields such as <code>title</code>, <code>writer</code>, <code>year</code>, <code>actors</code>, and <code>franchise</code>.</li>
+                    </ul>
+                    <pre><code>db.movies.insert({
+  title: "Fight Club",
+  writer: "Chuck Palahniuk",
+  year: 1999,
+  actors: ["Brad Pitt", "Edward Norton"]
+})
+// ...repeat for additional movies...</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 3: FIND Documents</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Get all documents in <code>movies</code>:</li>
+                    </ul>
+                    <pre><code>db.movies.find()</code></pre>
+                    <ul>
+                        <li>Filter by writer:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ writer: "Quentin Tarantino" })</code></pre>
+                    <ul>
+                        <li>Filter by actor:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ actors: "Brad Pitt" })</code></pre>
+                    <ul>
+                        <li>Filter by franchise:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ franchise: "The Hobbit" })</code></pre>
+                    <ul>
+                        <li>Released in the 1990s:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ year: { $gt: 1990, $lt: 2000 } })</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 4: UPDATE Documents</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Add synopsis to "The Hobbit: An Unexpected Journey":</li>
+                    </ul>
+                    <pre><code>db.movies.update(
+  { title: "The Hobbit: An Unexpected Journey" },
+  { $set: { synopsis: "A reluctant hobbit, Bilbo Baggins..." } }
+)</code></pre>
+                    <ul>
+                        <li>Add actor to "Pulp Fiction":</li>
+                    </ul>
+                    <pre><code>db.movies.update(
+  { title: "Pulp Fiction" },
+  { $push: { actors: "Samuel L. Jackson" } }
+)</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 5: SEARCH Documents</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Search by word in synopsis:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ synopsis: /Bilbo/ })</code></pre>
+                    <ul>
+                        <li>Multiple search conditions:</li>
+                    </ul>
+                    <pre><code>db.movies.find({ $and: [{ synopsis: /gold/ }, { synopsis: /dragon/ }] })</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 6: DELETE Documents</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Delete movie by title:</li>
+                    </ul>
+                    <pre><code>db.movies.remove({ title: "Avatar" })</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 7: Relationships</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>Insert into <b>users</b> collection:</li>
+                    </ul>
+                    <pre><code>db.users.insert({ username: "GoodGuyGreg", first_name: "Good Guy", last_name: "Greg" })</code></pre>
+                    <ul>
+                        <li>Insert related <b>posts</b> and <b>comments</b> with reference to ObjectId of a post.</li>
+                    </ul>
+                    <pre><code>db.comments.insert({
+  username: "GoodGuyGreg",
+  comment: "Hope you got a good deal!",
+  post: ObjectId("POST_ID_HERE")
+})</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 8: Querying Related Collections</h3>
+                <div class="table-info">
+                    <ul>
+                        <li>All users:</li>
+                    </ul>
+                    <pre><code>db.users.find().pretty()</code></pre>
+                    <ul>
+                        <li>Posts by a user:</li>
+                    </ul>
+                    <pre><code>db.posts.find({ username: "ScumbagSteve" })</code></pre>
+                    <ul>
+                        <li>Comments on a specific post:</li>
+                    </ul>
+                    <pre><code>db.comments.find({ post: ObjectId("POST_ID_HERE") })</code></pre>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3 class="step-title">Step 9: Entity-Relationship (ER) Diagram</h3>
+                <div class="table-info">
+                    <ul>
+                        <li><b>users</b>: <code>_id</code>, <code>username</code>, <code>first_name</code>, <code>last_name</code></li>
+                        <li><b>posts</b>: <code>_id</code>, <code>username</code> (FK → users.username), <code>title</code>, <code>body</code></li>
+                        <li><b>comments</b>: <code>_id</code>, <code>username</code> (FK → users.username), <code>comment</code>, <code>post</code> (FK → posts._id)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h2>Implementation Results</h2>
+            <div class="step-section">
+                <h3>1. Create a Database</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/9940ce55-55ab-4ef6-84f0-4fc0953074b4" alt="Create Database Screenshot">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>2. Insert Documents</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/80ae349b-f306-4fc2-b861-771550df3895" alt="Insert Documents Screenshot">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>3. FIND Documents</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/00cf543d-bca6-41c4-ab14-f22133ce901f" alt="FIND Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/b0c8878d-3bd6-4ad2-9293-1fbc18dabc03" alt="FIND Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/93125b14-cde4-407e-bcc0-a67c642fec3d" alt="FIND Screenshot 3">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/4cb76ea4-d863-4ae7-96bb-70d9b440c045" alt="FIND Screenshot 4">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/8b61b09f-c4a7-4d00-afc8-6a76a31cb1ff" alt="FIND Screenshot 5">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/3ca5db71-43bf-474a-9847-ac6b7ce27ff8" alt="FIND Screenshot 6">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>4. UPDATE Documents</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/5d16bb71-047f-424a-b50a-f458f2f7ac75" alt="UPDATE Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/f62b2d6a-0518-462a-a013-e9d9add3a5b6" alt="UPDATE Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/ad78e0a2-29b8-4fbe-abbb-844b776f6d23" alt="UPDATE Screenshot 3">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>5. SEARCH Documents</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/4fd883c4-0289-4d90-88ae-aeef7df26c70" alt="SEARCH Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/5d1f323d-05c9-407a-90ee-cc86b3ea855c" alt="SEARCH Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/92abbcbe-7da4-42a8-a911-48def492821b" alt="SEARCH Screenshot 3">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/0faab109-178f-44bb-b1ec-c45da324be95" alt="SEARCH Screenshot 4">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/0185dc4e-a8fa-41f0-a080-15baa87e6c62" alt="SEARCH Screenshot 5">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>6. DELETE Documents</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/e7df5563-f931-438f-b319-8cd1b495277b" alt="DELETE Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/f648d117-5fe6-4b3b-a574-fbb7964488c3" alt="DELETE Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>7. Relationships</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/4cd94de0-63be-4a93-a263-7030cd8f3802" alt="Relationships Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/5bcaf272-29a8-40dd-8422-73eb15e0d6b7" alt="Relationships Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/950f0958-fc2e-4539-ba86-5a3c45b694e5" alt="Relationships Screenshot 3">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>8. Querying Related Collections</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/a1c66687-8559-4253-a5ef-9b00c6b12857" alt="Querying Screenshot 1">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/6039b5e8-41c7-437d-a007-410a6336f3d7" alt="Querying Screenshot 2">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/a9c2438b-4646-4006-8f3c-c863dd299011" alt="Querying Screenshot 3">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/f7e3eeb6-c685-46cd-a052-f95526ab9b71" alt="Querying Screenshot 4">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/255e0cd9-bb9e-49cd-987c-42ec3baa16eb" alt="Querying Screenshot 5">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/6b9505cc-b2d2-43ea-bded-455619a4aa64" alt="Querying Screenshot 6">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/d37a418a-7e89-451b-b91a-4f3c3969c503" alt="Querying Screenshot 7">
+                    <div class="image-overlay"></div>
+                </div>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/7b528658-21d2-4571-9903-6240a2dea30f" alt="Querying Screenshot 8">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+            <div class="step-section">
+                <h3>9. Entity-Relationship (ER) Diagram</h3>
+                <div class="image-container" data-fullscreen>
+                    <img src="https://github.com/user-attachments/assets/0bce4b7a-3217-416a-b8ab-5b0f6c06c1e1" alt="ER Diagram">
+                    <div class="image-overlay"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="download-section">
+            <h2>Download Project File</h2>
+            <a href="https://github.com/user-attachments/files/20273938/MongoDB.Practice.Task-Munoz.docx" class="download-btn" download>
+                <i class="fas fa-file-word"></i>
+                <span class="text">Download Documentation</span>
+            </a>
+        </section>
+    </div>
+
+    <!-- Modal for fullscreen images -->
+    <div class="modal">
+        <div class="modal-content">
+            <img src="" alt="">
+            <button class="modal-close">×</button>
+        </div>
+    </div>
+
+    <div class="custom-cursor"></div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // Create stars
+        function createStars() {
+            const starsContainer = document.querySelector('.stars');
+            const numberOfStars = 200;
+
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = `${Math.random() * 3}px`;
+                star.style.height = star.style.width;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.setProperty('--duration', `${Math.random() * 3 + 1}s`);
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createStars();
+        });
+
+        // Fullscreen Image Modal
+        const modal = document.querySelector('.modal');
+        const modalImg = modal.querySelector('img');
+        const closeBtn = modal.querySelector('.modal-close');
+        const images = document.querySelectorAll('.image-container[data-fullscreen]');
+
+        images.forEach(container => {
+            container.addEventListener('click', (e) => {
+                const img = container.querySelector('img');
+                modalImg.src = img.src;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Intersection Observer for animations
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        document.querySelectorAll('.content-section, .image-container').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Enhanced Meteor Cursor Effect
+        document.addEventListener('DOMContentLoaded', () => {
+            const cursor = document.querySelector('.custom-cursor');
+            let isMoving = false;
+            let moveTimeout;
+            let lastX = 0;
+            let lastY = 0;
+            let velocity = { x: 0, y: 0 };
+
+            function updateCursor(e) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                
+                velocity.x = currentX - lastX;
+                velocity.y = currentY - lastY;
+                
+                cursor.style.left = currentX + 'px';
+                cursor.style.top = currentY + 'px';
+
+                const speed = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
+                
+                if (!isMoving) {
+                    isMoving = true;
+                    cursor.style.transform = `translate(-50%, -50%) scale(${0.8 + speed * 0.01})`;
+                }
+
+                clearTimeout(moveTimeout);
+                moveTimeout = setTimeout(() => {
+                    isMoving = false;
+                    cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 100);
+
+                if (speed > 5) {
+                    for (let i = 0; i < Math.min(speed / 5, 3); i++) {
+                        createTrail(currentX, currentY, speed);
+                    }
+                }
+
+                lastX = currentX;
+                lastY = currentY;
+            }
+
+            function createTrail(x, y, speed) {
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.left = x + 'px';
+                trail.style.top = y + 'px';
+                
+                const size = Math.min(4 + speed * 0.2, 8);
+                trail.style.width = `${size}px`;
+                trail.style.height = `${size}px`;
+                
+                document.body.appendChild(trail);
+
+                setTimeout(() => {
+                    trail.remove();
+                }, 500);
+            }
+
+            document.addEventListener('mousemove', updateCursor);
+
+            // Enhanced hover effects on interactive elements
+            const interactiveElements = document.querySelectorAll('a, button, .content-section, .image-container, .download-btn, .step-title, .table-info, .product-item');
+            
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.classList.add('hover');
+                    if (el.classList.contains('step-title') || el.classList.contains('table-info')) {
+                        createParticleExplosion(el);
+                    }
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hover');
+                });
+            });
+
+            function createParticleExplosion(element) {
+                const rect = element.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                for (let i = 0; i < 8; i++) {
+                    createParticle(centerX, centerY);
+                }
+            }
+
+            function createParticle(x, y) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                document.body.appendChild(particle);
+
+                const destinationX = x + (Math.random() - 0.5) * 200;
+                const destinationY = y + (Math.random() - 0.5) * 200;
+                const rotation = Math.random() * 520;
+                const delay = Math.random() * 200;
+
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.transform = `rotate(${rotation}deg)`;
+                particle.style.opacity = '0';
+
+                setTimeout(() => {
+                    particle.style.transition = 'all 1s ease-out';
+                    particle.style.left = `${destinationX}px`;
+                    particle.style.top = `${destinationY}px`;
+                    particle.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        particle.style.opacity = '0';
+                        setTimeout(() => {
+                            particle.remove();
+                        }, 1000);
+                    }, 500);
+                }, delay);
+            }
+        });
+    </script>
+</body>
+</html> 
